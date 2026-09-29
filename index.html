@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="so">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dhererka & Miisaanka 3D — Abdishakuur</title>
+<meta name="author" content="Abdishakuur">
+<style>
+:root{--bg:#f6f6f4;--card:#fff;--tx:#161616;--mut:#77777a;--ac:#2f6fed;--bd:#e3e3df;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e0f12;--card:#17181d;--tx:#f0f0f2;--mut:#8b8d96;--ac:#6c9bff;--bd:#272932}}
+:root[data-theme="dark"]{--bg:#0e0f12;--card:#17181d;--tx:#f0f0f2;--mut:#8b8d96;--ac:#6c9bff;--bd:#272932}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,"Segoe UI",Roboto,sans-serif}
+.w{max-width:760px;margin:0 auto;padding:16px}
+h1{font-size:20px;margin:4px 0 14px;display:flex;align-items:center;gap:10px}
+h1 b{background:var(--ac);color:var(--bg);border-radius:8px;padding:3px 8px;font-size:14px}
+.g{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:600px){.g{grid-template-columns:1fr}}
+.c{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:16px}
+#v{position:relative;padding:0;overflow:hidden;touch-action:none;cursor:grab}
+#v canvas{display:block;width:100%}
+#v small{position:absolute;left:0;right:0;bottom:8px;text-align:center;color:var(--mut);font-size:12px;pointer-events:none}
+.seg{display:flex;background:var(--bg);border-radius:10px;padding:3px;margin-bottom:12px}
+.seg button{flex:1;border:0;background:none;color:var(--mut);padding:8px;border-radius:8px;font-size:14px;cursor:pointer}
+.seg button.on{background:var(--card);color:var(--tx);box-shadow:0 0 0 1px var(--bd)}
+label{display:flex;justify-content:space-between;font-size:13px;color:var(--mut);margin:12px 0 4px}
+label span{color:var(--tx);font-weight:600}
+input[type=range]{width:100%;accent-color:var(--ac)}
+.r{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.r div{background:var(--bg);border-radius:12px;padding:10px}
+.r small{color:var(--mut);font-size:12px;display:block}
+.r strong{font-size:18px}
+footer{text-align:center;color:var(--mut);font-size:13px;margin:18px 0 6px}
+footer b{color:var(--tx)}
+</style>
+</head>
+<body>
+<div class="w">
+<h1><b>YD</b> Dhererka & Miisaanka · 3D</h1>
+<div class="g">
+  <div class="c" id="v"><small>Jiid si aad u wareejiso ↻</small></div>
+  <div class="c">
+    <div class="seg" id="sx"><button data-v="m" class="on">♂ Lab</button><button data-v="f">♀ Dheddig</button></div>
+    <div class="seg" id="un"><button data-v="me" class="on">cm / kg</button><button data-v="im">ft / lb</button></div>
+    <label>Dhererka <span id="hv"></span></label>
+    <input type="range" id="h" min="100" max="220" value="175">
+    <label>Miisaanka <span id="wv"></span></label>
+    <input type="range" id="w" min="30" max="180" value="70">
+    <div class="r">
+      <div><small>BMI</small><strong id="bmi"></strong></div>
+      <div><small>Dhererka</small><strong id="hh"></strong></div>
+      <div style="grid-column:1/3"><small>Xaaladda</small><strong id="ct"></strong></div>
+      <div style="grid-column:1/3"><small>Miisaanka caadiga ah ee dhererkaaga</small><strong id="rgv"></strong></div>
+    </div>
+  </div>
+</div>
+<footer>Waxaa sameeyay <b>Eng Abdishakuur Bashiir</b> · &copy; 2026</footer>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+var S={sex:'m',u:'me'},$=function(i){return document.getElementById(i)};
+var dark=matchMedia('(prefers-color-scheme:dark)').matches&&document.documentElement.dataset.theme!=='light';
+var COL=dark?0x6c9bff:0x2f6fed,GR=dark?0x2e3140:0xcfcfca;
+var box=$('v'),ok=true,scene,cam,ren,grp,spin=0,auto=true;
+try{
+  scene=new THREE.Scene();
+  cam=new THREE.PerspectiveCamera(32,1,.1,50);
+  ren=new THREE.WebGLRenderer({antialias:true,alpha:true});
+  ren.setPixelRatio(Math.min(devicePixelRatio,2));
+  box.insertBefore(ren.domElement,box.firstChild);
+  scene.add(new THREE.HemisphereLight(0xffffff,0x555566,.85));
+  var dl=new THREE.DirectionalLight(0xffffff,.8);dl.position.set(2,4,3);scene.add(dl);
+  var grid=new THREE.GridHelper(4,16,GR,GR);scene.add(grid);
+  // ruler pole with ticks (fixed, 0-2.2 m)
+  var rm=new THREE.MeshBasicMaterial({color:GR});
+  var pole=new THREE.Mesh(new THREE.BoxGeometry(.012,2.2,.012),rm);pole.position.set(-1.1,1.1,0);scene.add(pole);
+  for(var t=0;t<=22;t+=2){var tk=new THREE.Mesh(new THREE.BoxGeometry(t%10===0?.22:.12,.008,.008),rm);tk.position.set(-1.1+(t%10===0?.11:.06),t/10,0);scene.add(tk)}
+  var hl=new THREE.Mesh(new THREE.RingGeometry(.5,.512,48),new THREE.MeshBasicMaterial({color:COL,side:2,transparent:true,opacity:.6}));
+  hl.rotation.x=Math.PI/2;scene.add(hl);
+  grp=new THREE.Group();scene.add(grp);
+  cam.position.set(0,1.25,5.6);cam.lookAt(0,1.05,0);
+}catch(e){ok=false;box.innerHTML='<p style="padding:20px;color:var(--mut)">3D lama taageerin browser-kan.</p>'}
+
+function size(){if(!ok)return;var w=box.clientWidth;ren.setSize(w,w*1.15);cam.aspect=1/1.15;cam.updateProjectionMatrix()}
+addEventListener('resize',size);
+
+var mat=new THREE.MeshStandardMaterial({color:COL,roughness:.55,metalness:.05});
+function add(geo,x,y,z,sx,sy,sz,rz){var m=new THREE.Mesh(geo,mat);m.position.set(x,y,z||0);m.scale.set(sx||1,sy||1,sz||1);if(rz)m.rotation.z=rz;grp.add(m);return m}
+function sph(){return new THREE.SphereGeometry(1,24,18)}
+function cyl(a,b,l){return new THREE.CylinderGeometry(a,b,l,24)}
+
+function build(h,bmi){
+  if(!ok)return;
+  while(grp.children.length)grp.remove(grp.children[0]);
+  var H=h/100,f=S.sex==='f',
+  wf=Math.max(.75,Math.min(1.75,.8+(bmi-22)*.045)),d=.62*(.7+wf*.3),
+  sw=(f?.108:.125)*H*wf,hw=(f?.11:.095)*H*wf,ww=(f?.085:.095)*H*wf,
+  lr=(f?.05:.048)*H*wf,ar=.03*H*(.6+wf*.4);
+  var yh=.53*H,ys=.82*H;
+  // head + neck
+  add(sph(),0,.935*H,0,.066*H,.078*H,.07*H);
+  add(cyl(.026*H,.03*H,.06*H),0,.865*H,0);
+  // torso
+  var tor=add(cyl(sw,hw,ys-yh),0,(ys+yh)/2,0,1,1,d);
+  add(sph(),0,ys,0,sw,.05*H,sw*d);
+  add(sph(),0,yh,0,hw,.06*H,hw*d);
+  // legs + feet
+  [-1,1].forEach(function(s){
+    var lx=s*hw*.55;
+    add(cyl(lr*1.15,lr*.6,yh-.04*H),lx,(yh+.04*H)/2,0);
+    add(sph(),lx,yh,0,lr*1.15,lr*1.1,lr*1.15);
+    add(sph(),lx,.03*H,.035*H,lr*.75,.03*H,.065*H);
+    // arms
+    var ax=s*(sw+.012*H),ay=ys-.01*H,al=.34*H;
+    add(cyl(ar*1.1,ar*.75,al),ax+s*.02*H,ay-al/2,0,1,1,1,s*.08);
+    add(sph(),ax,ay,0,ar*1.4,ar*1.4,ar*1.4);
+    add(sph(),ax+s*.035*H,ay-al,0,ar*.9,ar*1.2,ar*.9);
+  });
+  hl.position.y=H;
+}
+
+function upd(){
+  var h=+$('h').value,w=+$('w').value,m=h/100,bmi=w/(m*m),im=S.u==='im';
+  var ti=h/2.54,ft=Math.floor(ti/12),inn=Math.round(ti-ft*12);if(inn===12){ft++;inn=0}
+  $('hv').textContent=im?ft+"'"+inn+'"':h+' cm';
+  $('wv').textContent=im?Math.round(w*2.20462)+' lb':w+' kg';
+  $('hh').textContent=m.toFixed(2)+' m';
+  $('bmi').textContent=bmi.toFixed(1);
+  $('ct').textContent=bmi<18.5?'Dhimman (miisaan yar)':bmi<25?'Caadi ✓':bmi<30?'Miisaan badan':'Buurnaan';
+  var lo=18.5*m*m,hi=24.9*m*m;
+  $('rgv').textContent=im?Math.round(lo*2.20462)+' – '+Math.round(hi*2.20462)+' lb':lo.toFixed(0)+' – '+hi.toFixed(0)+' kg';
+  build(h,bmi);
+}
+$('h').oninput=$('w').oninput=upd;
+[['sx','sex'],['un','u']].forEach(function(p){
+  $(p[0]).onclick=function(e){var v=e.target.dataset.v;if(!v)return;S[p[1]]=v;
+    Array.prototype.forEach.call(this.children,function(b){b.classList.toggle('on',b.dataset.v===v)});upd()}
+});
+
+// drag to rotate
+var dn=false,lx=0;
+box.addEventListener('pointerdown',function(e){dn=true;auto=false;lx=e.clientX;try{box.setPointerCapture(e.pointerId)}catch(_){}});
+box.addEventListener('pointermove',function(e){if(dn){spin+=(e.clientX-lx)*.01;lx=e.clientX}});
+box.addEventListener('pointerup',function(){dn=false});
+function loop(){requestAnimationFrame(loop);if(!ok)return;if(auto)spin+=.006;grp.rotation.y=spin;ren.render(scene,cam)}
+size();upd();if(ok)loop();
+</script>
+</body>
+</html>
